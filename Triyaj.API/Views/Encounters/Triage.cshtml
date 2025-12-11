@@ -1,0 +1,415 @@
+﻿@model Triyaj.Domain.Entities.Encounter
+@{
+    ViewData["Title"] = "Triyaj Değerlendirmesi";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-clipboard2-pulse"></i> Triyaj Değerlendirmesi</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Hasta Bilgileri -->
+                    <div class="alert alert-info">
+                        <h5><i class="bi bi-person-fill"></i> Hasta Bilgileri</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Ad Soyad:</strong> @Model.Patient.FirstName @Model.Patient.LastName
+                            </div>
+                            <div class="col-md-6">
+                                <strong>T.C. Kimlik:</strong> @Model.Patient.NationalId
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Doğum Tarihi:</strong> @Model.Patient.BirthDate.ToString("dd.MM.yyyy")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Cinsiyet:</strong> @(Model.Patient.Gender == "M" ? "Erkek" : "Kadın")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Geliş Zamanı:</strong> @Model.ArrivalTime.ToString("dd.MM.yyyy HH:mm")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Geliş Şekli:</strong> @Model.Source
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Önceki Triyaj Değerlendirmesi (varsa) -->
+                    <div id="previousAssessmentInfo" class="alert alert-warning d-none">
+                        <h5><i class="bi bi-clock-history"></i> Önceki Triyaj Değerlendirmesi</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Değerlendirme Tarihi:</strong><br>
+                                <span id="previousAssessmentDate"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Triyaj Seviyesi:</strong><br>
+                                <span id="previousTriageLevel"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Önerilen İşlem:</strong><br>
+                                <span id="previousRecommendedAction"></span>
+                            </div>
+                        </div>
+                        <hr>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> Aşağıdaki form önceki değerlerle doldurulmuştur. Güncellemek için yeni değerleri girebilirsiniz.
+                        </small>
+                    </div>
+
+                    <!-- Triyaj Formu -->
+                    <form id="triageForm">
+                        <input type="hidden" id="encounterId" value="@Model.Id" />
+                        
+                        <h5 class="mt-4 mb-3"><i class="bi bi-heart-pulse"></i> Vital Bulgular</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="heartRate" class="form-label">Nabız (bpm)</label>
+                                <input type="number" class="form-control" id="heartRate" name="heartRate" 
+                                       min="30" max="250" required placeholder="60-100 normal">
+                                <small class="text-muted">Normal: 60-100 bpm</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="spO2" class="form-label">SpO2 (%)</label>
+                                <input type="number" class="form-control" id="spO2" name="spO2" 
+                                       min="50" max="100" required placeholder="95-100 normal">
+                                <small class="text-muted">Normal: 95-100%</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="systolicBP" class="form-label">Sistolik Kan Basıncı (mmHg)</label>
+                                <input type="number" class="form-control" id="systolicBP" name="systolicBP" 
+                                       min="50" max="300" required placeholder="90-120 normal">
+                                <small class="text-muted">Normal: 90-120 mmHg</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="diastolicBP" class="form-label">Diastolik Kan Basıncı (mmHg)</label>
+                                <input type="number" class="form-control" id="diastolicBP" name="diastolicBP" 
+                                       min="30" max="200" required placeholder="60-80 normal">
+                                <small class="text-muted">Normal: 60-80 mmHg</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="temperature" class="form-label">Vücut Sıcaklığı (°C)</label>
+                                <input type="number" class="form-control" id="temperature" name="temperature" 
+                                       min="34" max="43" step="0.1" required placeholder="36.5-37.5 normal">
+                                <small class="text-muted">Normal: 36.5-37.5 °C</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="complaint" class="form-label">Hasta Şikayeti</label>
+                            <textarea class="form-control" id="complaint" name="complaint" rows="3" 
+                                      required placeholder="Hastanın şikayetlerini yazınız..."></textarea>
+                        </div>
+
+                        <!-- Triyaj Sonucu Preview -->
+                        <div id="triagePreview" class="alert d-none mb-3">
+                            <strong>Önerilen Triyaj Seviyesi:</strong> <span id="previewLevel"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Triyaj Değerlendirmesini Kaydet
+                            </button>
+                            <a href="/Encounters" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Geri Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Başarı Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="bi bi-check-circle-fill"></i> Triyaj Tamamlandı
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div id="successIcon" style="font-size: 4rem;"></div>
+                <h4 class="mt-3" id="triageResultTitle">Triyaj Sonucu</h4>
+                <p class="lead" id="triageResultLevel"></p>
+                <p class="text-muted" id="triageResultAction"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a href="/Encounters" class="btn btn-success">
+                    <i class="bi bi-list"></i> Bekleyen Hastalara Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hata Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">
+                    <i class="bi bi-x-circle-fill"></i> Hata
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+                <h5 class="mt-3" id="errorMessage">Bir hata oluştu</h5>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i> Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+    <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" id="toastHeader">
+            <i class="bi bi-info-circle me-2" id="toastIcon"></i>
+            <strong class="me-auto" id="toastTitle">Bildirim</strong>
+            <small>Şimdi</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastBody">
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    
+    <script>
+        $(document).ready(function() {
+            // Sayfa yüklendiğinde mevcut triyaj verilerini getir
+            loadExistingTriageData();
+
+            // Input değişikliklerinde triyaj önizlemesi
+            $('#heartRate, #spO2, #systolicBP, #temperature').on('input', function() {
+                updateTriagePreview();
+            });
+
+            // Form submit
+            $('#triageForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var encounterId = $('#encounterId').val();
+                var data = {
+                    heartRate: parseInt($('#heartRate').val()),
+                    systolicBP: parseInt($('#systolicBP').val()),
+                    diastolicBP: parseInt($('#diastolicBP').val()),
+                    spO2: parseInt($('#spO2').val()),
+                    temperature: parseFloat($('#temperature').val()),
+                    complaint: $('#complaint').val()
+                };
+
+                // Validasyon
+                if (!data.heartRate || !data.systolicBP || !data.diastolicBP || !data.spO2 || !data.temperature) {
+                    showToast('Uyarı', 'Lütfen tüm vital bulguları doldurunuz.', 'warning');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/encounters/' + encounterId + '/triage',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        showTriageSuccess(response.status);
+                    },
+                    error: function(xhr) {
+                        var error = xhr.responseJSON ? xhr.responseJSON.error : 'Bir hata oluştu';
+                        showError(error);
+                    }
+                });
+            });
+        });
+
+        // Mevcut triyaj verilerini yükle
+        function loadExistingTriageData() {
+            var encounterId = $('#encounterId').val();
+            
+            $.ajax({
+                url: '/api/encounters/' + encounterId,
+                type: 'GET',
+                success: function(data) {
+                    // Eğer triyaj verileri varsa formu doldur
+                    if (data.heartRate) {
+                        $('#heartRate').val(data.heartRate);
+                        $('#systolicBP').val(data.systolicBP);
+                        $('#diastolicBP').val(data.diastolicBP);
+                        $('#spO2').val(data.spO2);
+                        $('#temperature').val(data.temperature);
+                        $('#complaint').val(data.complaint);
+                        
+                        // Önizlemeyi güncelle
+                        updateTriagePreview();
+                        
+                        // Bildirim göster
+                        showToast('Bilgi', 'Önceki triyaj verileri yüklendi. Güncelleyebilirsiniz.', 'info');
+                        
+                        // Önceki değerlendirme bilgisini göster
+                        if (data.assessmentDate) {
+                            var assessmentDate = new Date(data.assessmentDate).toLocaleString('tr-TR');
+                            $('#previousAssessmentInfo').removeClass('d-none');
+                            $('#previousAssessmentDate').text(assessmentDate);
+                            $('#previousTriageLevel').html(getTriageBadge(data.triageLevel));
+                            $('#previousRecommendedAction').text(data.recommendedAction || '-');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Triyaj verileri yüklenemedi:', error);
+                }
+            });
+        }
+
+        function getTriageBadge(level) {
+            var badges = {
+                'Red': '<span class="badge bg-danger">🔴 Kırmızı (Acil)</span>',
+                'Yellow': '<span class="badge bg-warning text-dark">🟡 Sarı (Öncelikli)</span>',
+                'Green': '<span class="badge bg-success">🟢 Yeşil (Normal)</span>',
+                'Blue': '<span class="badge bg-info">🔵 Mavi (Ayaktan)</span>',
+                'Undefined': '<span class="badge bg-secondary">⚪ Belirlenmedi</span>'
+            };
+            return badges[level] || badges['Undefined'];
+        }
+
+        // Toast bildirimi göster
+        function showToast(title, message, type) {
+            var toast = $('#notificationToast');
+            var header = $('#toastHeader');
+            var icon = $('#toastIcon');
+            var titleEl = $('#toastTitle');
+            var body = $('#toastBody');
+
+            header.removeClass('bg-success bg-danger bg-warning bg-info text-white');
+            switch(type) {
+                case 'success':
+                    header.addClass('bg-success text-white');
+                    icon.attr('class', 'bi bi-check-circle-fill me-2');
+                    break;
+                case 'error':
+                    header.addClass('bg-danger text-white');
+                    icon.attr('class', 'bi bi-x-circle-fill me-2');
+                    break;
+                case 'warning':
+                    header.addClass('bg-warning');
+                    icon.attr('class', 'bi bi-exclamation-triangle-fill me-2');
+                    break;
+                default:
+                    header.addClass('bg-info text-white');
+                    icon.attr('class', 'bi bi-info-circle-fill me-2');
+            }
+
+            titleEl.text(title);
+            body.html(message);
+
+            var bsToast = new bootstrap.Toast(toast[0], { delay: 4000 });
+            bsToast.show();
+        }
+
+        // Triyaj başarı modal göster
+        function showTriageSuccess(level) {
+            var icon, title, levelText, action, iconColor;
+            
+            switch(level) {
+                case 'Red':
+                    icon = '🔴';
+                    iconColor = 'text-danger';
+                    title = 'ACİL DURUM';
+                    levelText = 'KIRMIZI SEVİYE';
+                    action = 'Acil müdahale gerekli - Resüsitasyon';
+                    break;
+                case 'Yellow':
+                    icon = '🟡';
+                    iconColor = 'text-warning';
+                    title = 'ÖNCELİKLİ';
+                    levelText = 'SARI SEVİYE';
+                    action = 'Öncelikli muayene - 15 dakika içinde';
+                    break;
+                case 'Green':
+                    icon = '🟢';
+                    iconColor = 'text-success';
+                    title = 'NORMAL';
+                    levelText = 'YEŞİL SEVİYE';
+                    action = 'Normal sıra - 60 dakika içinde';
+                    break;
+                case 'Blue':
+                    icon = '🔵';
+                    iconColor = 'text-info';
+                    title = 'AYAKTAN TEDAVİ';
+                    levelText = 'MAVİ SEVİYE';
+                    action = 'Poliklinik yönlendirmesi yapılabilir';
+                    break;
+                default:
+                    icon = '⚪';
+                    iconColor = 'text-secondary';
+                    title = 'DEĞERLENDİRİLDİ';
+                    levelText = 'SEVİYE BELİRLENDİ';
+                    action = 'Değerlendirme tamamlandı';
+            }
+
+            $('#successIcon').html('<span style="font-size: 5rem;">' + icon + '</span>');
+            $('#triageResultTitle').text(title);
+            $('#triageResultLevel').html('<strong>' + levelText + '</strong>');
+            $('#triageResultAction').text(action);
+            
+            var modal = new bootstrap.Modal(document.getElementById('successModal'));
+            modal.show();
+        }
+
+        // Hata modal göster
+        function showError(message) {
+            $('#errorMessage').text(message);
+            var modal = new bootstrap.Modal(document.getElementById('errorModal'));
+            modal.show();
+        }
+
+        function updateTriagePreview() {
+            var heartRate = parseInt($('#heartRate').val()) || 0;
+            var spO2 = parseInt($('#spO2').val()) || 100;
+            var systolicBP = parseInt($('#systolicBP').val()) || 120;
+            var temperature = parseFloat($('#temperature').val()) || 36.5;
+
+            var preview = $('#triagePreview');
+            var levelSpan = $('#previewLevel');
+            
+            if (heartRate === 0 && spO2 === 100 && systolicBP === 120) {
+                preview.addClass('d-none');
+                return;
+            }
+
+            preview.removeClass('d-none');
+            
+            // Triyaj algoritması
+            if (spO2 < 90 || heartRate > 130 || systolicBP < 90) {
+                levelSpan.html('🔴 <strong>KIRMIZI - ACİL</strong>');
+                preview.removeClass('alert-warning alert-success alert-info').addClass('alert-danger');
+            } else if (temperature > 39 || heartRate > 100) {
+                levelSpan.html('🟡 <strong>SARI - ÖNCELİKLİ</strong>');
+                preview.removeClass('alert-danger alert-success alert-info').addClass('alert-warning');
+            } else {
+                levelSpan.html('🟢 <strong>YEŞİL - NORMAL</strong>');
+                preview.removeClass('alert-danger alert-warning alert-info').addClass('alert-success');
+            }
+        }
+    </script>
+}
+

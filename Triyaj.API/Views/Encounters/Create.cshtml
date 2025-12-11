@@ -1,0 +1,467 @@
+﻿@{
+    ViewData["Title"] = "Yeni Hasta Kayıt";
+    var patients = ViewBag.Patients as List<Triyaj.Domain.Entities.Patient>;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-plus-fill"></i> Yeni Hasta Kayıt</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-4" id="registerTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="existing-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#existing" type="button" role="tab">
+                                <i class="bi bi-search"></i> Mevcut Hasta
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="new-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#new" type="button" role="tab">
+                                <i class="bi bi-person-plus"></i> Yeni Hasta
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="registerTabContent">
+                        <!-- Mevcut Hasta Seçimi -->
+                        <div class="tab-pane fade show active" id="existing" role="tabpanel">
+                            <form id="existingPatientForm">
+                                <div class="mb-3">
+                                    <label for="patientSelect" class="form-label">Hasta Seçin</label>
+                                    <select class="form-select" id="patientSelect" required>
+                                        <option value="">-- Hasta Seçiniz --</option>
+                                        @if (patients != null)
+                                        {
+                                            foreach (var patient in patients)
+                                            {
+                                                <option value="@patient.Id">
+                                                    @patient.FirstName @patient.LastName - @patient.NationalId
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sourceSelect" class="form-label">Geliş Şekli</label>
+                                    <select class="form-select" id="sourceSelect" required>
+                                        <option value="">-- Yükleniyor... --</option>
+                                    </select>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Kaydet
+                                    </button>
+                                    <a href="/Encounters" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i> Geri Dön
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Yeni Hasta Kaydı -->
+                        <div class="tab-pane fade" id="new" role="tabpanel">
+                            <form id="newPatientForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nationalId" class="form-label">T.C. Kimlik No</label>
+                                        <input type="text" class="form-control" id="nationalId" 
+                                               maxlength="11" pattern="\d{11}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">Ad</label>
+                                        <input type="text" class="form-control" id="firstName" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">Soyad</label>
+                                        <input type="text" class="form-control" id="lastName" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="birthDate" class="form-label">Doğum Tarihi</label>
+                                        <input type="date" class="form-control" id="birthDate" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="gender" class="form-label">Cinsiyet</label>
+                                        <select class="form-select" id="gender" required>
+                                            <option value="">-- Yükleniyor... --</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Telefon</label>
+                                        <input type="tel" class="form-control" id="phone" 
+                                               placeholder="05XX XXX XX XX">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sourceSelectNew" class="form-label">Geliş Şekli</label>
+                                    <select class="form-select" id="sourceSelectNew" required>
+                                        <option value="">-- Yükleniyor... --</option>
+                                    </select>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Kaydet
+                                    </button>
+                                    <a href="/Encounters" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i> Geri Dön
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Başarı Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="bi bi-check-circle-fill"></i> Başarılı
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h4 class="mt-3" id="successMessage">Hasta başarıyla kaydedildi!</h4>
+                <p class="text-muted">Bekleyen hastalar listesine yönlendiriliyorsunuz...</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a href="/Encounters" class="btn btn-success">
+                    <i class="bi bi-list"></i> Bekleyen Hastalara Git
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hata Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">
+                    <i class="bi bi-x-circle-fill"></i> Hata
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+                <h5 class="mt-3" id="errorMessage">Bir hata oluştu</h5>
+                <p class="text-muted" id="errorDetail"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i> Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Uyarı Modal (TC Var) -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="warningModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Uyarı
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 4rem;"></i>
+                <h5 class="mt-3" id="warningMessage">Dikkat!</h5>
+                <p id="warningDetail"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i> Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+    <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" id="toastHeader">
+            <i class="bi bi-info-circle me-2" id="toastIcon"></i>
+            <strong class="me-auto" id="toastTitle">Bildirim</strong>
+            <small>Şimdi</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastBody">
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    
+    <script>
+        $(document).ready(function() {
+            // Sayfa yüklendiğinde dropdown'ları doldur
+            loadGenders();
+            loadArrivalSources();
+
+            // Mevcut hasta ile encounter oluştur
+            $('#existingPatientForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var data = {
+                    patientId: $('#patientSelect').val(),
+                    source: $('#sourceSelect').val()
+                };
+
+                if (!data.patientId) {
+                    showWarning('Hasta Seçimi Gerekli', 'Lütfen listeden bir hasta seçiniz.');
+                    return;
+                }
+
+                if (!data.source) {
+                    showWarning('Geliş Şekli Gerekli', 'Lütfen geliş şeklini seçiniz.');
+                    return;
+                }
+
+                createEncounter(data);
+            });
+
+            // Yeni hasta ve encounter oluştur
+            $('#newPatientForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var nationalId = $('#nationalId').val();
+                
+                // TC Kimlik No kontrolü
+                if (!validateTcKimlikNo(nationalId)) {
+                    showWarning('Geçersiz T.C. Kimlik No', 'Lütfen geçerli bir T.C. Kimlik numarası giriniz. T.C. Kimlik numarası 11 haneli olmalı ve algoritma kurallarına uygun olmalıdır.');
+                    $('#nationalId').addClass('is-invalid');
+                    return;
+                }
+                $('#nationalId').removeClass('is-invalid');
+
+                // Önce hastayı oluştur
+                var patientData = {
+                    nationalId: nationalId,
+                    firstName: $('#firstName').val(),
+                    lastName: $('#lastName').val(),
+                    birthDate: $('#birthDate').val(),
+                    gender: $('#gender').val(),
+                    phone: $('#phone').val()
+                };
+
+                $.ajax({
+                    url: '/api/patients',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(patientData),
+                    success: function(response) {
+                        showToast('Hasta Oluşturuldu', 'Hasta kaydı başarıyla oluşturuldu.', 'success');
+                        // Hasta oluşturulduktan sonra encounter oluştur
+                        var encounterData = {
+                            patientId: response.id,
+                            source: $('#sourceSelectNew').val()
+                        };
+                        createEncounter(encounterData);
+                    },
+                    error: function(xhr) {
+                        var errorMsg = 'Hasta kaydı oluşturulamadı';
+                        var detail = '';
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.error) {
+                                errorMsg = xhr.responseJSON.error;
+                            }
+                            if (xhr.responseJSON.existingPatient) {
+                                detail = 'Bu T.C. Kimlik numarası ile kayıtlı hasta: <strong>' + xhr.responseJSON.existingPatient.fullName + '</strong><br><br>Mevcut hasta sekmesinden bu hastayı seçebilirsiniz.';
+                            }
+                        }
+                        showError(errorMsg, detail);
+                    }
+                });
+            });
+        });
+
+        // Toast bildirimi göster
+        function showToast(title, message, type) {
+            var toast = $('#notificationToast');
+            var header = $('#toastHeader');
+            var icon = $('#toastIcon');
+            var titleEl = $('#toastTitle');
+            var body = $('#toastBody');
+
+            header.removeClass('bg-success bg-danger bg-warning bg-info text-white');
+            switch(type) {
+                case 'success':
+                    header.addClass('bg-success text-white');
+                    icon.attr('class', 'bi bi-check-circle-fill me-2');
+                    break;
+                case 'error':
+                    header.addClass('bg-danger text-white');
+                    icon.attr('class', 'bi bi-x-circle-fill me-2');
+                    break;
+                case 'warning':
+                    header.addClass('bg-warning');
+                    icon.attr('class', 'bi bi-exclamation-triangle-fill me-2');
+                    break;
+                default:
+                    header.addClass('bg-info text-white');
+                    icon.attr('class', 'bi bi-info-circle-fill me-2');
+            }
+
+            titleEl.text(title);
+            body.html(message);
+
+            var bsToast = new bootstrap.Toast(toast[0], { delay: 4000 });
+            bsToast.show();
+        }
+
+        // Başarı modal göster
+        function showSuccess(message) {
+            $('#successMessage').text(message);
+            var modal = new bootstrap.Modal(document.getElementById('successModal'));
+            modal.show();
+            
+            // 2 saniye sonra otomatik yönlendir
+            setTimeout(function() {
+                window.location.href = '/Encounters';
+            }, 2000);
+        }
+
+        // Hata modal göster
+        function showError(title, detail) {
+            $('#errorMessage').text(title);
+            $('#errorDetail').html(detail || '');
+            var modal = new bootstrap.Modal(document.getElementById('errorModal'));
+            modal.show();
+        }
+
+        // Uyarı modal göster
+        function showWarning(title, detail) {
+            $('#warningMessage').text(title);
+            $('#warningDetail').html(detail || '');
+            var modal = new bootstrap.Modal(document.getElementById('warningModal'));
+            modal.show();
+        }
+
+        // Cinsiyetleri yükle
+        function loadGenders() {
+            $.ajax({
+                url: '/api/lookups/genders',
+                type: 'GET',
+                success: function(data) {
+                    var $gender = $('#gender');
+                    $gender.empty().append('<option value="">-- Seçiniz --</option>');
+                    data.forEach(function(item) {
+                        $gender.append('<option value="' + item.code + '">' + item.name + '</option>');
+                    });
+                    showToast('Yüklendi', 'Cinsiyet bilgileri yüklendi.', 'info');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Cinsiyetler yüklenemedi:', error);
+                    var $gender = $('#gender');
+                    $gender.empty().append('<option value="">-- Seçiniz --</option>');
+                    $gender.append('<option value="M">Erkek</option>');
+                    $gender.append('<option value="F">Kadın</option>');
+                    showToast('Uyarı', 'Cinsiyet verileri sunucudan alınamadı, varsayılan veriler kullanılıyor.', 'warning');
+                }
+            });
+        }
+
+        // Geliş şekillerini yükle
+        function loadArrivalSources() {
+            $.ajax({
+                url: '/api/lookups/arrival-sources',
+                type: 'GET',
+                success: function(data) {
+                    var $sourceSelect = $('#sourceSelect');
+                    var $sourceSelectNew = $('#sourceSelectNew');
+                    
+                    $sourceSelect.empty().append('<option value="">-- Seçiniz --</option>');
+                    $sourceSelectNew.empty().append('<option value="">-- Seçiniz --</option>');
+                    
+                    data.forEach(function(item) {
+                        $sourceSelect.append('<option value="' + item.code + '">' + item.name + '</option>');
+                        $sourceSelectNew.append('<option value="' + item.code + '">' + item.name + '</option>');
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Geliş şekilleri yüklenemedi:', error);
+                    var $sourceSelect = $('#sourceSelect');
+                    var $sourceSelectNew = $('#sourceSelectNew');
+                    
+                    $sourceSelect.empty().append('<option value="">-- Seçiniz --</option>');
+                    $sourceSelectNew.empty().append('<option value="">-- Seçiniz --</option>');
+                    
+                    // Fallback veriler
+                    var fallbackSources = [
+                        { code: 'Walk-in', name: 'Yürüyerek' },
+                        { code: 'Ambulance', name: 'Ambulans' },
+                        { code: 'Transfer', name: 'Sevk' },
+                        { code: 'Other', name: 'Diğer' }
+                    ];
+                    fallbackSources.forEach(function(item) {
+                        $sourceSelect.append('<option value="' + item.code + '">' + item.name + '</option>');
+                        $sourceSelectNew.append('<option value="' + item.code + '">' + item.name + '</option>');
+                    });
+                    showToast('Uyarı', 'Geliş şekilleri sunucudan alınamadı, varsayılan veriler kullanılıyor.', 'warning');
+                }
+            });
+        }
+
+        // TC Kimlik No doğrulama
+        function validateTcKimlikNo(tcNo) {
+            if (!tcNo || tcNo.length !== 11) return false;
+            if (!/^\d{11}$/.test(tcNo)) return false;
+            if (tcNo[0] === '0') return false;
+
+            var digits = tcNo.split('').map(Number);
+            
+            var sumAll = digits.slice(0, 10).reduce((a, b) => a + b, 0);
+            if (sumAll % 10 !== digits[10]) return false;
+
+            var oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
+            var evenSum = digits[1] + digits[3] + digits[5] + digits[7];
+            var result = (oddSum * 7 - evenSum) % 10;
+            if (result < 0) result += 10;
+            if (result !== digits[9]) return false;
+
+            return true;
+        }
+
+        function createEncounter(data) {
+            $.ajax({
+                url: '/api/encounters',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function() {
+                    showSuccess('Hasta başarıyla kaydedildi!');
+                },
+                error: function(xhr) {
+                    var error = xhr.responseJSON ? xhr.responseJSON.error : 'Bir hata oluştu';
+                    showError('Kayıt Başarısız', error);
+                }
+            });
+        }
+    </script>
+}
+
